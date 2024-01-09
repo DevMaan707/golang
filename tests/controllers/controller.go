@@ -9,15 +9,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const connectionString = ""
+const connectionString = "mongodb+srv://AashishReddy:test123@cluster0.wd6ydng.mongodb.net/?retryWrites=true&w=majority"
 
 func ConnectDB() (*mongo.Client, error) {
 	//client options
-	clientOption := options.Client().ApplyURI(connectionString)
+	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	opts := options.Client().ApplyURI("mongodb+srv://AashishReddy:test123@cluster0.wd6ydng.mongodb.net/?retryWrites=true&w=majority").SetServerAPIOptions(serverAPI)
 
 	//connect to mongoDB
 
-	client, err := mongo.Connect(context.TODO(), clientOption)
+	client, err := mongo.Connect(context.TODO(), opts)
 
 	//Handling Errors which may raise
 	if err != nil {

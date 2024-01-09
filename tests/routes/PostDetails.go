@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fmt"
+	"net/http"
 
 	helper "github.com/dev.maan707/golang/tests/helpers"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -10,8 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const dbName = ""
-const colName = ""
+const dbName = "TimeTable"
+const colName = "A_Block"
 
 func HandleData(c *gin.Context, client *mongo.Client) {
 
@@ -28,6 +29,16 @@ func HandleData(c *gin.Context, client *mongo.Client) {
 
 	collection := client.Database(dbName).Collection(colName)
 
-	helper.Find(collection, payload.HourSegment)
+	rooms := helper.Find(collection, payload.HourSegment, payload.Block, payload.Day)
+	var length = 5
+	if len(rooms) < 5 {
+		length = len(rooms) - 1
+	}
+	response := map[string]interface{}{
+		"number":    length,
+		"classroom": rooms,
+	}
+	c.JSON(http.StatusOK, response)
 
+	fmt.Println("Response Sent!")
 }

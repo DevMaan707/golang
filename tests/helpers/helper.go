@@ -4,34 +4,32 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
-	"time"
+	"strconv"
+
+	//"strconv"
+	//"strings"
 
 	"github.com/dev.maan707/golang/tests/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Find(collection *mongo.Collection, hour int) {
+func Find(collection *mongo.Collection, hour int, Block string, Day int) []string {
 
-	//Getting todays Day
-	currentTime := time.Now()
+	fmt.Printf("HourSegment = %d\nBlock = %s\nDay= %d\n", hour, Block, Day)
 
-	day := currentTime.Weekday()
-
-	//Defining my filter criteria
-
-	filter := bson.D{
-		{"Day_Key", day - 1},
+	if err := collection.Database().Client().Ping(context.Background(), nil); err != nil {
+		log.Fatal("Failed to ping MongoDB:", err)
 	}
 
-	//filter := bson.D{
-	//	{"Day/Time", "Tuesday"},
-	//	{"Columns.6", bson.D{
-	//		{"$regex", "TRAINING$|LAB$"},
-	//	}},
-	//}
+	//Describing the filter
 
+	filter := bson.M{
+		strconv.Itoa(hour): bson.M{"$regex": "(TRAINING|LAB)$"},
+		"Day_Key":          Day,
+	}
+
+	//Initiating the Find Operation
 	fmt.Println("Initiating Filter")
 	cursor, err := collection.Find(context.Background(), filter)
 
@@ -43,26 +41,40 @@ func Find(collection *mongo.Collection, hour int) {
 
 	defer cursor.Close(context.Background())
 
+	//Checking the length of the cursor
+	fmt.Println("Cursor Count:", cursor.RemainingBatchLength())
+
 	//Iterating through the results
 
+	var rooms []string
+	var data models.Received
+
 	for cursor.Next(context.Background()) {
-		var data models.Received
+		//var data models.Received
+		fmt.Println("Yes... In the loop")
 		err := cursor.Decode(&data)
 
 		if err != nil {
 			log.Fatal(err)
 		}
-		var rooms []string
-		for colname, value := range data.Columns {
+		fmt.Println(data.ID)
 
-			if colname == hour {
+		/* for colname, value := range data.Columns.Columns {
+			if colname == strconv.Itoa(hour) {
+				fmt.Println("Checking column == hour.....")
 				if strings.HasSuffix(value, "TRAINING") || strings.HasSuffix(value, "LAB") {
 					fmt.Printf("Match Found : Room Number - %s\n", data.RoomNo)
 					rooms = append(rooms, data.RoomNo)
 				}
 			}
-		}
+		} */
+		rooms = append(rooms, data.RoomNo)
+
 	}
+	for _, room := range rooms {
+		fmt.Println(room)
+	}
+	return rooms
 
 	//fmt.Println(found)
 }
