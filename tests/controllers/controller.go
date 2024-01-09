@@ -11,11 +11,6 @@ import (
 
 const connectionString = ""
 
-//const dbName = ""
-//const colName = ""
-
-//var collection *mongo.Collection
-
 func ConnectDB() (*mongo.Client, error) {
 	//client options
 	clientOption := options.Client().ApplyURI(connectionString)
@@ -33,9 +28,4 @@ func ConnectDB() (*mongo.Client, error) {
 	fmt.Println("Successful Connection with MongoDB")
 
 	return client, nil
-	//Getting the Collection
-	//collection = client.Database(dbName).Collection(colName)
-
-	//fmt.Println("Collection instance ready")
-
 }
