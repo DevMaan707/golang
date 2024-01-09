@@ -21,7 +21,6 @@ func main() {
 	router := gin.Default()
 
 	//creating routes
-	//route.PostDetails(router)
 
 	router.POST("/room-details", func(c *gin.Context) {
 		route.HandleData(c, client)

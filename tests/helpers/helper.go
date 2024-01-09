@@ -49,15 +49,20 @@ func Find(collection *mongo.Collection, hour int, Block string, Day int) []strin
 	var rooms []string
 	var data models.Received
 
+	//Trying to iterate through the received data
 	for cursor.Next(context.Background()) {
-		//var data models.Received
-		fmt.Println("Yes... In the loop")
+
+		fmt.Println("Decoding the json")
 		err := cursor.Decode(&data)
 
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		//printing the object ID just incase
 		fmt.Println(data.ID)
+
+		//This code was to manually search the data
 
 		/* for colname, value := range data.Columns.Columns {
 			if colname == strconv.Itoa(hour) {
@@ -68,13 +73,18 @@ func Find(collection *mongo.Collection, hour int, Block string, Day int) []strin
 				}
 			}
 		} */
+
+		//appening the value of rooms to a new slice
 		rooms = append(rooms, data.RoomNo)
 
 	}
+
+	//Iterating through the rooms just incase
 	for _, room := range rooms {
 		fmt.Println(room)
 	}
+
+	//Returning the slice back to routes/PostDetails.go
 	return rooms
 
-	//fmt.Println(found)
 }
