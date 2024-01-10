@@ -26,6 +26,10 @@ func main() {
 		route.HandleData(c, client)
 	})
 
+	router.POST("/reserve", func(c *gin.Context) {
+		route.HandleReserve(client, c)
+	})
+
 	//starting the router
 	router.Run()
 }

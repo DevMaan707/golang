@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	helper "github.com/dev.maan707/golang/tests/helpers"
@@ -13,6 +14,9 @@ import (
 
 const dbName = "TimeTable"
 const colName = "A_Block"
+const reserve = "Reserve"
+
+var collectionReserve *mongo.Collection
 
 func HandleData(c *gin.Context, client *mongo.Client) {
 
@@ -31,7 +35,7 @@ func HandleData(c *gin.Context, client *mongo.Client) {
 
 	//Getting the search data from mongoDB in "rooms"
 
-	rooms := helper.Find(collection, payload.HourSegment, payload.Block, payload.Day)
+	rooms := helper.Find(collectionReserve, collection, payload.HourSegment, payload.Block, payload.Day)
 
 	//Limiting the search results to only 5 Rooms
 
@@ -51,4 +55,24 @@ func HandleData(c *gin.Context, client *mongo.Client) {
 	c.JSON(http.StatusOK, response)
 
 	fmt.Println("Response Sent!")
+}
+
+func HandleReserve(client *mongo.Client, c *gin.Context) {
+
+	//creating the instance of the Reserve struct
+	var res model.Reserve
+
+	//Binding the Request with the Reserve Struct
+	c.ShouldBindJSON(&res)
+
+	//Getting the Reserve Collection
+	collectionReserve = client.Database(dbName).Collection(reserve)
+
+	_, err := helper.UpdateReserve(collectionReserve, res.Hour, res.Room_No)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Successfully Added Class %s for the HourSegment %d\n", res.Room_No, res.Hour)
+
 }

@@ -23,3 +23,8 @@ type Received struct {
 	DayTime string             `bson:"Day/Time"`
 	Columns ColumnsData        `bson:",inline"`
 }
+
+type Reserve struct {
+	Room_No string `bson:"Room_No"`
+	Hour    int    `bson:"Hour"`
+}

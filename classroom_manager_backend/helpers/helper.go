@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"slices"
 	"strconv"
 
 	"github.com/dev.maan707/golang/tests/models"
@@ -11,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Find(collection *mongo.Collection, hour int, Block string, Day int) []string {
+func Find(collection_forReserve, collection *mongo.Collection, hour int, Block string, Day int) []string {
 
 	fmt.Printf("HourSegment = %d\nBlock = %s\nDay= %d\n", hour, Block, Day)
 
@@ -41,8 +42,35 @@ func Find(collection *mongo.Collection, hour int, Block string, Day int) []strin
 	//Checking the length of the cursor
 	fmt.Println("Cursor Count:", cursor.RemainingBatchLength())
 
-	//Iterating through the results
+	//Defining slices
+	var ResRooms []string
+	var ResHour []int
 
+	if collection_forReserve != nil {
+		//Getting all Reserved Data
+		cursorReserved, err := collection_forReserve.Find(context.Background(), bson.D{})
+		if err != nil {
+			log.Fatal(err)
+		}
+		var ResPayload models.Reserve
+
+		for cursorReserved.Next(context.Background()) {
+			fmt.Println("Decoding the Reserved Data")
+
+			err := cursorReserved.Decode(&ResPayload)
+
+			if err != nil {
+				log.Fatal("Error occurred while Decoding")
+			}
+
+			fmt.Printf("Reserved Room = %s Hour = %d\n", ResPayload.Room_No, ResPayload.Hour)
+			ResRooms = append(ResRooms, ResPayload.Room_No)
+			ResHour = append(ResHour, ResPayload.Hour)
+		}
+
+	}
+
+	//Iterating through the results
 	var rooms []string
 	var data models.Received
 
@@ -59,20 +87,15 @@ func Find(collection *mongo.Collection, hour int, Block string, Day int) []strin
 		//printing the object ID just incase
 		fmt.Println(data.ID)
 
-		//This code was to manually search the data
-
-		/* for colname, value := range data.Columns.Columns {
-			if colname == strconv.Itoa(hour) {
-				fmt.Println("Checking column == hour.....")
-				if strings.HasSuffix(value, "TRAINING") || strings.HasSuffix(value, "LAB") {
-					fmt.Printf("Match Found : Room Number - %s\n", data.RoomNo)
-					rooms = append(rooms, data.RoomNo)
-				}
+		if slices.Contains(ResHour, hour) {
+			if slices.Contains(ResRooms, data.RoomNo) {
+				continue
+			} else {
+				rooms = append(rooms, data.RoomNo)
 			}
-		} */
-
-		//appening the value of rooms to a new slice
-		rooms = append(rooms, data.RoomNo)
+		} else {
+			rooms = append(rooms, data.RoomNo)
+		}
 
 	}
 
@@ -80,8 +103,42 @@ func Find(collection *mongo.Collection, hour int, Block string, Day int) []strin
 	for _, room := range rooms {
 		fmt.Println(room)
 	}
-
 	//Returning the slice back to routes/PostDetails.go
 	return rooms
 
+}
+
+func UpdateReserve(collection *mongo.Collection, Hour int, Room_No string) (success string, err error) {
+
+	if err := collection.Database().Client().Ping(context.Background(), nil); err != nil {
+		log.Fatal("Failed to ping MongoDB:", err)
+	}
+
+	fmt.Println("Trying to add data into Database")
+
+	ctx := context.TODO()
+
+	/* if err!=nil{
+		log.Fatal("Failed in Context")
+	} */
+
+	/* insert := bson.D{
+		{"Room_No",roomno},
+		{"Hour",hour},
+	}
+	*/
+
+	//Creating the Input data
+	docs := models.Reserve{Room_No: Room_No, Hour: Hour}
+
+	fmt.Println("Initiating The cursor")
+	cursor, err := collection.InsertOne(ctx, docs)
+
+	if err != nil {
+		log.Fatal("Failed in getting cursor", err)
+	}
+
+	fmt.Printf("Successfully Added with _id = %s\n", cursor.InsertedID)
+
+	return "y", nil
 }
