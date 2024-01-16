@@ -118,17 +118,6 @@ func UpdateReserve(collection *mongo.Collection, Hour int, Room_No string) (succ
 
 	ctx := context.TODO()
 
-	/* if err!=nil{
-		log.Fatal("Failed in Context")
-	} */
-
-	/* insert := bson.D{
-		{"Room_No",roomno},
-		{"Hour",hour},
-	}
-	*/
-
-	//Creating the Input data
 	docs := models.Reserve{Room_No: Room_No, Hour: Hour}
 
 	fmt.Println("Initiating The cursor")

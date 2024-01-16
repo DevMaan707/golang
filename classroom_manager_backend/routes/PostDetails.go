@@ -13,7 +13,8 @@ import (
 )
 
 const dbName = "TimeTable"
-const colName = "A_Block"
+
+// const colName = "A_Block"
 const reserve = "Reserve"
 
 var collectionReserve *mongo.Collection
@@ -29,13 +30,80 @@ func HandleData(c *gin.Context, client *mongo.Client) {
 	//Printing received
 	fmt.Println("Data Successfully Received from the client")
 
-	//Getting Collection
+	//Defining "rooms" var
 
-	collection := client.Database(dbName).Collection(colName)
+	var rooms []string
 
-	//Getting the search data from mongoDB in "rooms"
+	//Conditional Programming to redirect to different blocks
 
-	rooms := helper.Find(collectionReserve, collection, payload.HourSegment, payload.Block, payload.Day)
+	if payload.Block == "A" {
+
+		//Getting Collection
+		collection := client.Database(dbName).Collection("A_Block")
+
+		//Getting the search data from mongoDB in "rooms"
+
+		rooms = helper.Find(collectionReserve, collection, payload.HourSegment, payload.Block, payload.Day)
+
+	} else if payload.Block == "B" {
+
+		//Getting Collection
+
+		collection := client.Database(dbName).Collection("B_Block")
+
+		//Getting the search data from mongoDB in "rooms"
+
+		rooms = helper.Find(collectionReserve, collection, payload.HourSegment, payload.Block, payload.Day)
+
+	} else if payload.Block == "C" {
+
+		//Getting COllection
+
+		collection := client.Database(dbName).Collection("C_Block")
+
+		//Getting the search data from mongoDB in "rooms"
+
+		rooms = helper.Find(collectionReserve, collection, payload.HourSegment, payload.Block, payload.Day)
+
+	} else if payload.Block == "D" {
+
+		//Getting Collection
+
+		collection := client.Database(dbName).Collection("D_Block")
+
+		//Getting the search data from mongoDB in "rooms"
+
+		rooms = helper.Find(collectionReserve, collection, payload.HourSegment, payload.Block, payload.Day)
+
+	} else if payload.Block == "H" {
+
+		//Getting COllection
+
+		collection := client.Database(dbName).Collection("H_Block")
+
+		//Getting the search data from mongoDB in "rooms"
+
+		rooms = helper.Find(collectionReserve, collection, payload.HourSegment, payload.Block, payload.Day)
+	} else if payload.Block == "E" {
+
+		//Getting Collection
+
+		collection := client.Database(dbName).Collection("E_Block")
+
+		//Getting the search data from mongoDB in "rooms"
+
+		rooms = helper.Find(collectionReserve, collection, payload.HourSegment, payload.Block, payload.Day)
+
+	} else if payload.Block == "All" {
+
+		//Getting Collection
+		collection := client.Database(dbName).Collection("All_Blocks")
+
+		//Getting the search data from mongoDB in "rooms"
+
+		rooms = helper.Find(collectionReserve, collection, payload.HourSegment, payload.Block, payload.Day)
+
+	}
 
 	//Limiting the search results to only 5 Rooms
 
